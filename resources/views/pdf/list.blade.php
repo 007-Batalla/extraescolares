@@ -110,8 +110,8 @@
 	<span class="activity-span">{{ $activity }}</span>
 	<span class="date-span"> Teapa, Tabasco a {{ $date }}</span>
 	<span class="teacher-span">{{ $teacher }}</span>
-	<span class="admin1-span">Lic. Alfonso Ignacio Fragoso Pedrero</span>
-	<span class="admin2-span">Lic. Alfonso Ignacio Fragoso Pedrero</span>
+	<span class="admin1-span">L.E. Carmen Godínez Vidal</span>
+	<span class="admin2-span">L.E. Carmen Godínez Vidal</span>
 	<div></div>
 	@foreach($students as $student)
 	<table>

@@ -148,7 +148,7 @@
 	</p>
 	<span class="user">{{ $student['activity']['user'][0]['name'] }}</span>
 	<span class="user-activity"><strong>Responsable {{$student['activity']['name']}}</strong></span>
-	<span class="admin">Lic. Alfonso Ignacio Fragoso Pedrero</span>
+	<span class="admin">L.E. Carmen Godínez Vidal</span>
 	<span class="admin-activity"><strong>Jefe del Departamento de Difusión y Concertación</strong></span>
 	<p class="token">{{ $student['validation_token'] }}</p>
 	<div class="token-qr">
