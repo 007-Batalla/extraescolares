@@ -16,11 +16,17 @@ class Certificate extends Component
 	use Toast;
 
 	#[Validate(['required'], message: ['required' => 'Debes escribir un número de ficha o matrícula'])]
-	public $search = null;
+	public string $search = '';
 
 	public $student_data = null;
 
-	public $modal = false;
+	public string $alertModalText = '';
+
+	public string $downloadModalText = '';
+
+	public bool $downloadCertificateModal = false;
+
+	public bool $modalAlert = false;
 
 	public function searchData()
 	{
@@ -36,6 +42,12 @@ class Certificate extends Component
 			->orWhere('validation_token', $this->search)
 			->first();
 
+		if (!$student) {
+			$this->downloadModalText = 'Aún no se ha validado tu participación en el extraescolar, acércate con tu profesor para verificar tu situación académica';
+			$this->downloadCertificateModal = true;
+			return false;
+		}
+
 		if (isset($student)) {
 			$this->student_data = $student->toArray();
 			$this->student_data['points'] = $student->getEvaluationPoints();
@@ -43,14 +55,27 @@ class Certificate extends Component
 			$date = Carbon::createFromDate($student->validated_at);
 			$this->student_data['validated_at'] = $date->isoFormat('D MMMM YYYY');
 		}
-		$this->modal = true;
+
+		$this->downloadCertificateModal = true;
 	}
 
 	public function downloadPdf()
 	{
 		$student = Student::findOrFail($this->student_data['id']);
 
-		$this->modal = false;
+		$this->downloadCertificateModal = false;
+
+		if ($student->validation_token === null) {
+			$this->alertModalText = "Reportate con tu maestro para verificar tú situación académica";
+			$this->modalAlert = true;
+			return false;
+		}
+
+		if ($student->certificate_downloaded === true) {
+			$this->alertModalText = "La constancia ya ha sido descargada, para descargar una nueva solicitar en el área correspondiente";
+			$this->modalAlert = true;
+			return false;
+		}
 
 		if ($student->certificate_downloaded === false) {
 			$qrcode = base64_encode(QrCode::format('png')->size(130)->style('round')->mergeString(Storage::get('public/images/tecnm_azul.png'), 0.4)->errorCorrection('H')->generate($student->validation_token));
@@ -61,25 +86,14 @@ class Certificate extends Component
 			$pdf = Pdf::loadView('pdf.certificate', $this->student_data)
 				->setPaper('letter', 'portrait')
 				->output();
-				
+
 			$student->setCertificateDownloaded(true);
 
 			return response()->streamDownload(
-				fn () => print($pdf),
-				strtolower(str_replace(" ", "_", $this->student_data['name'])) . "certificate.pdf"
+				fn() => print($pdf),
+				strtolower(str_replace(" ", "_", $this->student_data['name'])) . "-certificate.pdf"
 			);
 		}
-
-		return $this->toast(
-			type: 'warning',
-			title: 'Descarga de constancia',
-			description: 'La constancia ya ha sido descargada, para descargar una nueva solicitar en el área correspondiente',                  			// optional (text)
-			position: 'toast-bottom toast-end',    	// optional (daisyUI classes)
-			icon: 'o-x-circle',       					// Optional (any icon)
-			css: 'alert-success',                  	// Optional (daisyUI classes)
-			timeout: 3000,                      		// optional (ms)
-			redirectTo: null                    		// optional (uri)
-		);
 	}
 
 	public function render()

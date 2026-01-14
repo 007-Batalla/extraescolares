@@ -15,6 +15,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -23,7 +24,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Exists;
-
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class StudentResource extends Resource
 {
@@ -58,7 +60,7 @@ class StudentResource extends Resource
 					->label('Nombre'),
 				Forms\Components\Select::make('gender')
 					->required()
-					->options(fn (): array => Genders::forSelect())
+					->options(fn(): array => Genders::forSelect())
 					// ->formatStateUsing(fn (string $state): string => Genders::getDescription($state))
 					->label('Género'),
 				Forms\Components\Select::make('career_id')
@@ -80,10 +82,10 @@ class StudentResource extends Resource
 					->label('Número de ficha'),
 				Forms\Components\TextInput::make('university_enrollment')
 					->unique(ignoreRecord: true)
-					->regex('/^\d{2}[A-Z]\d{5}$/')
+					->regex('/^[A-Z]?\d{2}[A-Z]\d{5}$/')
 					->validationMessages([
 						'unique' => 'El número de matrícula ya existe',
-						'regex' => 'La matrícula debe tener el formato 00E00000',
+						'regex' => 'La matrícula debe tener el formato B00E00000',
 					])
 					->maxLength(8)
 					->label('Matrícula'),
@@ -113,6 +115,7 @@ class StudentResource extends Resource
 						// Only render the tooltip if the column content exceeds the length limit.
 						return $state;
 					})
+					->searchable()
 					->label('Nombre'),
 				Tables\Columns\TextColumn::make('gender')
 					->sortable()
@@ -135,11 +138,13 @@ class StudentResource extends Resource
 				Tables\Columns\TextColumn::make('activity.name')
 					->numeric()
 					->sortable()
+					->searchable()
 					->toggleable(isToggledHiddenByDefault: true)
 					->label('Actividad'),
 				Tables\Columns\TextColumn::make('career.name')
 					->numeric()
 					->sortable()
+					->searchable()
 					->limit(10)
 					->tooltip(function (TextColumn $column): ?string {
 						$state = $column->getState();
@@ -171,6 +176,7 @@ class StudentResource extends Resource
 					->label('Matrícula'),
 				Tables\Columns\TextColumn::make('period.lapse')
 					->numeric()
+					->searchable()
 					->sortable()
 					->toggleable(isToggledHiddenByDefault: true)
 					->label('Periodo'),
@@ -255,13 +261,22 @@ class StudentResource extends Resource
 					->label('Fecha de modificación'),
 			])
 			->modifyQueryUsing(
-				fn (Builder $query) => $query->where(
-					'activity_id',
-					Activity::where('user_id', Auth::user()->id)->first()->id
-				)
+				function (Builder $query) {
+					$user = User::findOrFail(Auth::user()->id);
+
+					return $query->whereIn('activity_id', $user->getActivitiesIds());
+				}
 			)
 			->filters([
-				//
+				SelectFilter::make('career')
+					->relationship('career', 'name')
+					->multiple()
+					->preload()
+					->label('Carrera'),
+				SelectFilter::make('period')
+					->relationship('period', 'lapse')
+					->preload()
+					->label('Periodo'),
 			])
 			->actions([
 				Tables\Actions\Action::make('evaluateStudent')
@@ -362,13 +377,19 @@ class StudentResource extends Resource
 					}),
 				Tables\Actions\Action::make('printEvaluation')
 					->label('Notas')
-					->url(fn (Student $record): string => route('admin.student_grades', $record)),
+					->url(fn(Student $record): string => route('admin.student_grades', $record)),
 				// Tables\Actions\EditAction::make(),
 			])
 			->bulkActions([
 				Tables\Actions\BulkActionGroup::make([
 					Tables\Actions\DeleteBulkAction::make(),
 				]),
+				ExportBulkAction::make()
+					->exports([
+						ExcelExport::make()->withFilename(date('Y-m-d') . '-extraescolares')
+							->withColumns()
+							->fromTable(),
+					]),
 			]);
 	}
 

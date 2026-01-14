@@ -34,12 +34,32 @@
 			position: absolute;
 			font-size: 1rem;
 			width: 80%;
-			top: 38%;
+			top: 42%;
 			left: 51.5%;
 			transform: translate(-50%, -50%);
 			text-align: justify;
 			text-justify: auto;
 			line-height: 150%;
+		}
+
+		.admin-services {
+			position: absolute;
+			font-size: 1rem;
+			width: 300px;
+			top: 27%;
+			left: 29.6%;
+			transform: translate(-50%, -50%);
+			text-align: left;
+		}
+
+		.admin-services-activity {
+			position: absolute;
+			font-size: 1rem;
+			width: 450px;
+			top: 29%;
+			left: 39%;
+			transform: translate(-50%, -50%);
+			text-align: left;
 		}
 
 		.user {
@@ -58,6 +78,26 @@
 			width: 230px;
 			top: 74.5%;
 			left: 29%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+		}
+
+		.admin {
+			position: absolute;
+			font-size: 0.75rem;
+			width: 230px;
+			top: 73%;
+			left: 75%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+		}
+
+		.admin-activity {
+			position: absolute;
+			font-size: 0.75rem;
+			width: 230px;
+			top: 74.8%;
+			left: 75%;
 			transform: translate(-50%, -50%);
 			text-align: center;
 		}
@@ -87,8 +127,10 @@
 </head>
 
 <body>
-	<img class="image-background" src="{{ storage_path('certificate/template.jpg') }}" alt="template">
+	<img class="image-background" src="{{ storage_path('certificate/template.png') }}" alt="template">
 	{{-- <h2>{{ $student['name'] }}</h2> --}}
+	<span class="admin-services">Lic. Mortimer Castellanos Cruz</span>
+	<span class="admin-services-activity"><strong>Jefe del Departamento de Servicios Escolares</strong></span>
 	<p class="text">
 		El que suscribe <strong>{{ $student['activity']['user'][0]['name'] }}</strong>, por este medio se permite hacer de
 		su
@@ -105,7 +147,9 @@
 		Se extiende la presente en la ciudad de Teapa Tabasco; con fecha de <strong>{{ $student['validated_at'] }}</strong>.
 	</p>
 	<span class="user">{{ $student['activity']['user'][0]['name'] }}</span>
-	<span class="user-activity">Responsable {{$student['activity']['name']}}</span>
+	<span class="user-activity"><strong>Responsable {{$student['activity']['name']}}</strong></span>
+	<span class="admin">L.E. Carmen Godínez Vidal</span>
+	<span class="admin-activity"><strong>Jefe del Departamento de Difusión y Concertación</strong></span>
 	<p class="token">{{ $student['validation_token'] }}</p>
 	<div class="token-qr">
 		<img src="data:image/png;base64,{{  $qrcode  }}" alt="qr-code">

@@ -26,22 +26,30 @@
         </div>
     </div>
 
-    <x-modal wire:model="modal" title="Constancias Extraescolares" subtitle="" separator>
-        @if ($search !== null && $student_data === null)
+    <x-modal wire:model="modalAlert" title="Constancias extraescolares" class="backdrop-blur">
+        <div class="mb-5">{{ $alertModalText}}</div>
+        <x-slot:actions>
+            <x-button label="Aceptar" @click="$wire.modalAlert = false" class="btn-secondary" />
+        </x-slot:actions>
+    </x-modal>
+
+    <x-modal wire:model="downloadCertificateModal" title="Constancias Extraescolares" subtitle="" separator>
+        @if ($student_data === null)
         <h1 class="text-neutral-950">
-            No se encontró ninguna coincidencia con la matrícula <span class="uppercase font-medium">{{ $search }}</span>
+            {{$downloadModalText}}
+            <!-- <span class="uppercase font-medium">{{ $search }}</span> -->
         </h1>
         <x-slot:actions>
-            <x-button label="Aceptar" class="btn-secondary" @click="$wire.modal = false" />
+            <x-button label="Aceptar" class="btn-secondary" @click="$wire.downloadCertificateModal = false" />
         </x-slot:actions>
         @endif
-        @if( $search !== null && $student_data !== null)
+        @if( $student_data !== null)
         <span>
             Nombre: <strong>{{ $student_data['name'] }}</strong><br>
             Actividad: <strong>{{ $student_data['activity']['name'] }}</strong>
         </span>
         <x-slot:actions>
-            <x-button label="Cancelar" @click="$wire.modal = false" />
+            <x-button label="Cancelar" @click="$wire.downloadCertificateModal = false" />
             <x-button label="Descargar" class="btn-secondary" wire:click="downloadPdf()" />
         </x-slot:actions>
         @endif
